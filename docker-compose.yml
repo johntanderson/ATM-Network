@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  server:
+    build: ./server
+    ports:
+    - 56789:56789
+
+  mysql:
+    build: ./mysql
+    volumes:
+      - atm-data:/var/lib/mysql
+
+volumes:
+  atm-data:
