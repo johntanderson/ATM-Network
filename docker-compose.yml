@@ -2,12 +2,12 @@ version: "3.9"
 
 services:
   server:
-    build: ./server
+    build: ./Server
     ports:
     - 56789:56789
 
-  mysql:
-    build: ./mysql
+  mariadb:
+    build: ./Database
     volumes:
       - atm-data:/var/lib/mysql
 
