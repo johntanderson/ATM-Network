@@ -1,13 +1,13 @@
 import sys
-import AtmServer
-
+from Controller import handle_client
+from Server import Server
 
 if __name__ == '__main__':
-    server = AtmServer.Server(host="0.0.0.0", port=56789)
+    server = Server(host="127.0.0.1", port=56789, handler=handle_client)
     try:
         server.start()
-    except KeyboardInterrupt:
-        print("Server is shutting down...")
+    except Exception as e:
+        print(str(e))
         server.stop()
     finally:
         sys.exit(0)

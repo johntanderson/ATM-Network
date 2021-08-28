@@ -1,6 +1,13 @@
+#!/usr/bin/env python
+
+import signal
 from os import name, system
 import sys
-from AtmClient import Client
+from API import Client
+
+
+def catch_sigint(sig, frame):
+    return
 
 
 def clear():
@@ -14,22 +21,23 @@ def clear():
 
 
 def main():
-    clear()
-    print("Welcome To The Bank,\n")
-    print("Please choose an option to continue:")
-    print("1. Open an Account")
-    print("2. Login")
-    choice = input("\n>>  ").strip().split(" ")
-    if choice[0] == "1":
+    while 1:
+        clear()
+        print("Welcome To The Bank,\n")
+        print("Please choose an option to continue:")
+        print("1. Open an Account")
+        print("2. Login")
         try:
-            return register()
-        except KeyboardInterrupt:
-            return
-    if choice[0] == "2":
-        try:
-            return login()
-        except KeyboardInterrupt:
-            return
+            choice = input("\n>>  ")
+            choice.strip().split(" ")
+            if choice[0] == "1":
+                register()
+            if choice[0] == "2":
+                login()
+        except EOFError:
+            sys.exit(0)
+        except IndexError:
+            pass
 
 
 def register():
@@ -56,6 +64,7 @@ def protected_routes(token):
     logged_in = True
 
     def check_balance():
+        nonlocal logged_in
         clear()
         res = client.balance()
         if res[0] == "BALANCE" and len(res) == 2:
@@ -67,9 +76,10 @@ def protected_routes(token):
         input("Press Enter To Continue")
 
     def deposit():
+        nonlocal logged_in
         clear()
         print("Please enter the following information:")
-        amount = input("Amount To Deposit: ")
+        amount = input("Amount To Deposit: ") or 0
         res = client.deposit(amount)
         clear()
         if res[0] == "DEPOSIT" and len(res) == 2:
@@ -82,19 +92,21 @@ def protected_routes(token):
             print(f"Current Balance:  {balance}\n")
         else:
             print("There was an error processing your transaction.\n")
+            logged_in = False
         input("Press Enter To Continue")
 
     def withdraw():
+        nonlocal logged_in
         clear()
         print("Please enter the following information:")
-        amount = input("Amount To Withdraw: ")
+        amount = input("Amount To Withdraw: ") or '0'
         res = client.withdraw(amount)
         clear()
         if res[0] == "WITHDRAW" and len(res) == 2:
             balance_info = res[1].split(",")
             prev_bal, balance = float(balance_info[0]), float(balance_info[1])
             actual_withdraw = abs(prev_bal-balance)
-            if actual_withdraw > 0:
+            if actual_withdraw > 0 or amount == '0':
                 print("Withdraw Successful!\n")
                 print(f"Previous Balance: {prev_bal}")
                 print(f"Amount Withdrew: {actual_withdraw}")
@@ -103,6 +115,7 @@ def protected_routes(token):
                 print("Withdraw Unsuccessful. Insufficient funds to complete transaction.\n")
         else:
             print("There was an error processing your transaction.\n")
+            logged_in = False
         input("Press Enter To Continue")
 
     while logged_in:
@@ -120,7 +133,6 @@ def protected_routes(token):
         elif choice[0] == "3":
             withdraw()
         elif choice[0] == "4":
-            client.token = None
             logged_in = False
 
 
@@ -140,8 +152,5 @@ def login():
 
 
 if __name__ == '__main__':
-    try:
-        while 1:
-            main()
-    except KeyboardInterrupt as e:
-        sys.exit(0)
+    signal.signal(signal.SIGINT, catch_sigint)
+    main()

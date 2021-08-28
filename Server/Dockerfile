@@ -6,7 +6,7 @@ COPY ./requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 EXPOSE 56789
 COPY ./src/* .
-ENV MYSQL_HOST=mysql
+ENV MYSQL_HOST=mariadb
 ENV MYSQL_USER=root
 ENV MYSQL_PASSWORD=password
 ENV MYSQL_DB=atm
